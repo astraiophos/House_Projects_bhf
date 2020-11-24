@@ -72,3 +72,8 @@ parser.add_argument('--wait_time',
                     default=0.01,
                     help='Specify the amount of time you want to wait between setting the step of the stepper motor.'
                     )
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Primary functions
+
