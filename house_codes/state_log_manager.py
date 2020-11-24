@@ -26,9 +26,7 @@ class StateLogManager:
         """
         if 'time' not in self.log_data:
             self.log_data['time'] = datetime.datetime.now()
-            return
-        else:
-            return
+        return
 
     def write_state(self):
         """
