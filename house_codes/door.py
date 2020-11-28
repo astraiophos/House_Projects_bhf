@@ -12,6 +12,7 @@ Pseudo Code:    The code in general works in the following manner:
 
 import argparse
 from pathlib import Path
+from house_codes.state_log_manager import StateLogManager
 import time
 import RPi.GPIO as GPIO
 
@@ -71,6 +72,13 @@ parser.add_argument('--wait_time',
                     type=is_float,
                     default=0.01,
                     help='Specify the amount of time you want to wait between setting the step of the stepper motor.'
+                    )
+parser.add_argument('--revolutions',
+                    dest='open_door',
+                    type=float_2_steps,
+                    default=###TODO,
+                    help='Specify the number of revolutions to turn (motor is capable of 32 steps per revolution, or\n'
+                         '5.625 degrees of rotation).'
                     )
 
 

@@ -6,17 +6,21 @@ Usage:          This code is meant to provide functionality for managing the sta
 """
 
 import datetime
+from pathlib import Path
+
 
 class StateLogManager:
-    def __init__(self, log_data):
+    def __init__(self, log_data, log_loc):
         """
         Expects a dictionary representing the state log information to be recorded
         :param log_data: A dictionary with at least one keyword with information to be recorded in the log
         """
         self.log_data = log_data
         self.get_time_data()
-        self.accepted_keys = get_accepted_keys()
-        self.write_state()
+        if hasattr(self.log_data, 'door_state'):
+            self.state_log_text = self.set_door_state()
+        if hasattr(self, 'state_log_text'):
+            self.write_state(log_loc)
 
     def get_time_data(self):
         """
@@ -28,18 +32,19 @@ class StateLogManager:
             self.log_data['time'] = datetime.datetime.now()
         return
 
-    def write_state(self):
+    def set_door_state(self, str_fmt='%m/%d/%Y, %H:%M:%S'):
+        """
+        This will store the door state as text for writing to the state log file.
+        :return:    String for writing to the state log
+        """
+        log_text = 'door_state: {}\n'.format(self.log_data['door_state'])
+        log_text += 'time: {}'.format(datetime.datetime.strftime(self.log_data['time'], str_fmt))
+        return log_text
+
+    def write_state(self, file_path):
         """
         Write down the information provided to the state log (accepting only the keys
         :return:
         """
-
-
-def get_accepted_keys():
-    """
-    This function determines the keys that are accepted, which are used in turn for writing the variables of
-    interest to the state log.
-    :return:
-    """
-    key_list = ['door_state', 'time']
-    return key_list
+        file_path = Path(file_path)
+        file_path.write_text(self.state_log_text)
