@@ -81,12 +81,13 @@ parser.add_argument('--state_log',
                     help='Provide the path to the state log file (the file that tracks the current state of the coop\n'
                          'door. Default location is [../data/state_log.txt] in relation to this script.'
                     )
-parser.add_argument('--clockwise',
-                    dest='clockwise',
-                    type=str_2_bool,
+parser.add_argument('--door_action',
+                    dest='door_action',
+                    choices=['open', 'close'],
+                    type=str.lower,
                     required=True,
-                    help='Specify the direction you want the motor to turn. If you say [True], the motor will turn\n'
-                         'clockwise. If [False], then counterclockwise.'
+                    help='Specify the direction you want the motor to turn. If you say [open] the motor will rotate\n'
+                         'clockwise. If [close], then the motor will turn counterclockwise.'
                     )
 parser.add_argument('--wait_time',
                     dest='wait_time',
@@ -113,6 +114,15 @@ parser.add_argument('--step_size',
                     help='If you want to use the motor in half-step mode, use the value [1]. If you want to try the\n'
                          'motor in full-step mode, use the value [2].'
                     )
+parser.add_argument('--driver_pins',
+                    dest='driver_pins',
+                    nargs=4,
+                    default=[17, 22, 23, 24],
+                    help='If you change the pinout from the Raspberry Pi board, you can change the pins here. The \n'
+                         'pin numbers must be the GPIO pins (not to be confused with the physical pin numbering).\n'
+                         'The default GPIO pins used are, [17, 22, 23, 24].'
+                    )
+args = parser.parse_args()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -146,20 +156,44 @@ def set_sequence(step=1):
             i += 2
         return full_seq
 
-###TODO Need to change the "clockwise" parameter to be "open" or "close" and define "open" as the clockwise direction (matters for how we write the state log)
-def turn_motor(clockwise, seq, seq_steps, ):
+
+def turn_motor(action, seq, seq_steps, gpio_pins):
     """
     This function will turn the motor in the direction specified for the number of revolutions/steps specified.
-    :param clockwise:   Boolean defining whether the motor turns clockwise or counterclockwise
+    :param action:      Boolean defining whether the motor turns clockwise or counterclockwise
     :param seq:         The driver board sequence for turning the motor
     :param seq_steps:   The number of steps in the sequence (repeats allowed)
+    :param gpio_pins:   The GPIO pins to use for in1, in2, in3, and in4 on the driver board (in order)
     :return:
     """
-    if clockwise is True:
+    if action == 'open':
         step_dir = 1
-    elif clockwise is False:
+    elif action == 'close':
         step_dir = -1
     else:
-        raise TypeError("Expected either 'True' or 'False' for the 'clockwise' variable of this function. Provided: {}"
-                        "".format(clockwise))
+        raise TypeError("Expected either 'open' or 'close'. Provided: {}".format(action))
 
+
+def setup_pins(gpio_pins):
+    """
+    Setup the GPIO pins for output
+    :param gpio_pins:   The GPIO pins to set up
+    :return:
+    """
+    # Set all pins as output
+    for pin in gpio_pins:
+        GPIO.setup(pin, GPIO.OUT)
+        GPIO.output(pin, False)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Main Program
+if __name__ == '__main__':
+    try:
+        # Use BCM GPIO references instead of physical pin numbers
+        GPIO.setmode(GPIO.BCM)
+        setup_pins(args.driver_pins)
+    except KeyboardInterrupt:
+        print("Closing the program")
+    finally:
+        GPIO.cleanup()
