@@ -10,17 +10,18 @@ from pathlib import Path
 
 
 class StateLogManager:
-    def __init__(self, log_data, log_loc):
+    def __init__(self, log_data, log_loc='../data/state_log.txt'):
         """
         Expects a dictionary representing the state log information to be recorded
         :param log_data: A dictionary with at least one keyword with information to be recorded in the log
         """
         self.log_data = log_data
+        self.log_path = log_loc
         self.get_time_data()
         if hasattr(self.log_data, 'door_state'):
             self.state_log_text = self.set_door_state()
         if hasattr(self, 'state_log_text'):
-            self.write_state(log_loc)
+            self.write_state()
 
     def get_time_data(self):
         """
@@ -41,10 +42,10 @@ class StateLogManager:
         log_text += 'time: {}'.format(datetime.datetime.strftime(self.log_data['time'], str_fmt))
         return log_text
 
-    def write_state(self, file_path):
+    def write_state(self):
         """
         Write down the information provided to the state log (accepting only the keys
         :return:
         """
-        file_path = Path(file_path)
+        file_path = Path(self.log_path)
         file_path.write_text(self.state_log_text)

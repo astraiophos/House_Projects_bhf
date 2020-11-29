@@ -36,15 +36,25 @@ def is_float(mystr):
         return False
 
 
-def float_2_steps(mystr):
+def float_2_steps(mystr, rev_steps="half"):
+    """
+    This will convert the number of revolutions desired into the proper number of motor steps, depending too on whether
+    the half-step or full-step turns are used for turing the motor.
+    :param mystr:       The number of revolutions (floating point value assumed)
+    :param rev_steps:   Accepted choices are "half" or "full"
+    :return:
+    """
+    if rev_steps.lower() == 'half':
+        rev_count = 64
+    elif rev_steps.lower() == 'full':
+        rev_count = 32
+    else:
+        raise TypeError("Accepted choices are 'full' or 'half', provided value was: {}".format(rev_steps))
     import decimal
     decimal.getcontext().rounding = decimal.ROUND_DOWN
-    if is_float is not False:
-        revs = decimal.Decimal(mystr)
-        steps = round(decimal.Decimal(revs * 64), 0)
-        return steps
-    else:
-        raise TypeError("Please provide a numeric value: {}".format(mystr))
+    revs = decimal.Decimal(mystr)
+    steps = int(round(decimal.Decimal(revs * rev_count), 0))
+    return steps
 
 
 def str_2_bool(mystr):
@@ -71,12 +81,12 @@ parser.add_argument('--state_log',
                     help='Provide the path to the state log file (the file that tracks the current state of the coop\n'
                          'door. Default location is [../data/state_log.txt] in relation to this script.'
                     )
-parser.add_argument('--door_action',
-                    dest='open_door',
-                    type=str.lower,
-                    choices=['open', 'close'],
+parser.add_argument('--clockwise',
+                    dest='clockwise',
+                    type=str_2_bool,
                     required=True,
-                    help='Specify whether you want the door to open or close. Acceptable options are [open] or [close].'
+                    help='Specify the direction you want the motor to turn. If you say [True], the motor will turn\n'
+                         'clockwise. If [False], then counterclockwise.'
                     )
 parser.add_argument('--wait_time',
                     dest='wait_time',
@@ -85,8 +95,8 @@ parser.add_argument('--wait_time',
                     help='Specify the amount of time you want to wait between setting the step of the stepper motor.'
                     )
 parser.add_argument('--revolutions',
-                    dest='open_door',
-                    type=float_2_steps,
+                    dest='revolutions',
+                    type=float,
                     default=3,
                     help='Specify the number of revolutions to turn. This motor operates using half-steps (a total \n'
                          'of 64 half-steps, or 2.8125 degrees per half-step). To specify partial revolutions, use a \n'
@@ -95,8 +105,61 @@ parser.add_argument('--revolutions',
                          'the number of revolutions from a floating point decimal value into the number of steps\n'
                          'needed to drive the motor. The default is [3.0] revolutions.'
                     )
+parser.add_argument('--step_size',
+                    dest='step_size',
+                    choices=[1, 2],
+                    type=int,
+                    default=1,
+                    help='If you want to use the motor in half-step mode, use the value [1]. If you want to try the\n'
+                         'motor in full-step mode, use the value [2].'
+                    )
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Primary functions
+
+
+def set_sequence(step=1):
+    """
+    This builds and returns a list of the motor stepping sequence for sending the right signal to the driver board.
+    If the "step" value is set to 1, then it will return the sequence for half-step-turns on the motor. If set to 2,
+    then the full-step-turn sequence will be provided
+    :return: List of high-low 4-pin combinations in order (order matters) for stepping the motor.
+    """
+    seq = [
+        [1, 0, 0, 1],
+        [1, 0, 0, 0],
+        [1, 1, 0, 0],
+        [0, 1, 0, 0],
+        [0, 1, 1, 0],
+        [0, 0, 1, 0],
+        [0, 0, 1, 1],
+        [0, 0, 0, 1]
+    ]
+    if step == 1:
+        return seq
+    elif step == 2:
+        i = 1
+        full_seq = []
+        while i < len(seq):
+            full_seq.append(seq[i])
+            i += 2
+        return full_seq
+
+###TODO Need to change the "clockwise" parameter to be "open" or "close" and define "open" as the clockwise direction (matters for how we write the state log)
+def turn_motor(clockwise, seq, seq_steps, ):
+    """
+    This function will turn the motor in the direction specified for the number of revolutions/steps specified.
+    :param clockwise:   Boolean defining whether the motor turns clockwise or counterclockwise
+    :param seq:         The driver board sequence for turning the motor
+    :param seq_steps:   The number of steps in the sequence (repeats allowed)
+    :return:
+    """
+    if clockwise is True:
+        step_dir = 1
+    elif clockwise is False:
+        step_dir = -1
+    else:
+        raise TypeError("Expected either 'True' or 'False' for the 'clockwise' variable of this function. Provided: {}"
+                        "".format(clockwise))
 
