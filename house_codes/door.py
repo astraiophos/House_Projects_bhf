@@ -36,6 +36,17 @@ def is_float(mystr):
         return False
 
 
+def float_2_steps(mystr):
+    import decimal
+    decimal.getcontext().rounding = decimal.ROUND_DOWN
+    if is_float is not False:
+        revs = decimal.Decimal(mystr)
+        steps = round(decimal.Decimal(revs * 64), 0)
+        return steps
+    else:
+        raise TypeError("Please provide a numeric value: {}".format(mystr))
+
+
 def str_2_bool(mystr):
     trues = ['t', 'true', '1']
     falses = ['f', 'false', '0']
@@ -70,15 +81,19 @@ parser.add_argument('--door_action',
 parser.add_argument('--wait_time',
                     dest='wait_time',
                     type=is_float,
-                    default=0.01,
+                    default=0.001,
                     help='Specify the amount of time you want to wait between setting the step of the stepper motor.'
                     )
 parser.add_argument('--revolutions',
                     dest='open_door',
                     type=float_2_steps,
-                    default=###TODO,
-                    help='Specify the number of revolutions to turn (motor is capable of 32 steps per revolution, or\n'
-                         '5.625 degrees of rotation).'
+                    default=3,
+                    help='Specify the number of revolutions to turn. This motor operates using half-steps (a total \n'
+                         'of 64 half-steps, or 2.8125 degrees per half-step). To specify partial revolutions, use a \n'
+                         'floating decimal value (e.g. one half of a revolution is 0.5 revolutions, or 32 half-\n'
+                         'steps). Do not type the number of half-steps, but understand that the code will translate\n'
+                         'the number of revolutions from a floating point decimal value into the number of steps\n'
+                         'needed to drive the motor. The default is [3.0] revolutions.'
                     )
 
 
