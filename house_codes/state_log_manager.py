@@ -44,8 +44,27 @@ class StateLogManager:
 
     def write_state(self):
         """
-        Write down the information provided to the state log (accepting only the keys
+        Write down the information provided to the state log
         :return:
         """
         file_path = Path(self.log_path)
         file_path.write_text(self.state_log_text)
+
+
+def check_door_state(file_path='../data/state_log.txt'):
+    """
+    Verifies whether the door is open or closed
+    :param file_path:   Path to the state log file
+    :return:            Returns a dictionary object containing keys for the door state and time
+    """
+    log_text = Path(file_path).read_text()
+    log_text = log_text.replace('\r', '\n').replace('\n\n', '\n').split('\n')
+    state = ''
+    time = ''
+    for line in log_text:
+        if 'door_state' in line:
+            state = line.split()[-1]
+        elif 'time' in line:
+            time = line.split(maxsplit=1)[-1]
+    state_lex = {'door_state': state, 'time': time}
+    return state_lex

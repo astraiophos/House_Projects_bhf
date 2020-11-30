@@ -12,7 +12,8 @@ Pseudo Code:    The code in general works in the following manner:
 
 import argparse
 from pathlib import Path
-from house_codes.state_log_manager import StateLogManager
+import datetime
+from house_codes.state_log_manager import check_door_state, StateLogManager
 import time
 import RPi.GPIO as GPIO
 
@@ -36,11 +37,11 @@ def is_float(mystr):
         return False
 
 
-def float_2_steps(mystr, rev_steps="half"):
+def float_2_steps(revs, rev_steps="half"):
     """
     This will convert the number of revolutions desired into the proper number of motor steps, depending too on whether
     the half-step or full-step turns are used for turing the motor.
-    :param mystr:       The number of revolutions (floating point value assumed)
+    :param revs:        The number of revolutions (floating point value assumed)
     :param rev_steps:   Accepted choices are "half" or "full"
     :return:
     """
@@ -52,7 +53,7 @@ def float_2_steps(mystr, rev_steps="half"):
         raise TypeError("Accepted choices are 'full' or 'half', provided value was: {}".format(rev_steps))
     import decimal
     decimal.getcontext().rounding = decimal.ROUND_DOWN
-    revs = decimal.Decimal(mystr)
+    revs = decimal.Decimal(revs)
     steps = int(round(decimal.Decimal(revs * rev_count), 0))
     return steps
 
@@ -157,13 +158,14 @@ def set_sequence(step=1):
         return full_seq
 
 
-def turn_motor(action, seq, seq_steps, gpio_pins):
+def turn_motor(action, seq, seq_steps, gpio_pins, wait_time):
     """
     This function will turn the motor in the direction specified for the number of revolutions/steps specified.
     :param action:      Boolean defining whether the motor turns clockwise or counterclockwise
     :param seq:         The driver board sequence for turning the motor
     :param seq_steps:   The number of steps in the sequence (repeats allowed)
     :param gpio_pins:   The GPIO pins to use for in1, in2, in3, and in4 on the driver board (in order)
+    :param wait_time:   The time to wait between each step or half-step
     :return:
     """
     if action == 'open':
@@ -172,6 +174,25 @@ def turn_motor(action, seq, seq_steps, gpio_pins):
         step_dir = -1
     else:
         raise TypeError("Expected either 'open' or 'close'. Provided: {}".format(action))
+    i = 0
+    counter = 0
+    while i < seq_steps:
+        for pin in range(0, 4):
+            xpin = gpio_pins[pin]
+            if seq[counter][pin] != 0:
+                print("Enable GPIO %i" % (xpin))
+                GPIO.output(xpin, True)
+            else:
+                GPIO.output(xpin, False)
+        # If we reach the end of the sequence start again
+        if abs(counter) == len(seq) - 1:
+            counter = 0
+        elif abs(counter) < len(seq) - 1:
+            counter += step_dir
+        # Wait before moving on
+        time.sleep(wait_time)
+    door_state = {'door_state': action, 'time': datetime.datetime.now()}
+    return door_state
 
 
 def setup_pins(gpio_pins):
@@ -190,9 +211,24 @@ def setup_pins(gpio_pins):
 # Main Program
 if __name__ == '__main__':
     try:
-        # Use BCM GPIO references instead of physical pin numbers
-        GPIO.setmode(GPIO.BCM)
-        setup_pins(args.driver_pins)
+        cur_status = check_door_state(args.state_log)
+        if cur_status == args.door_action:
+            print("The door has already been {}ed.".format(args.door_action))
+        else:
+            # Use BCM GPIO references instead of physical pin numbers
+            GPIO.setmode(GPIO.BCM)
+            setup_pins(args.driver_pins)
+            # Find the number of steps to make the number of revolutions specified by the user
+            num_steps = float_2_steps(args.revolutions, args.step_size)
+            step_sequence = set_sequence(args.step_size)
+            door_info = turn_motor(
+                action=args.door_action,
+                seq=step_sequence,
+                seq_steps=num_steps,
+                gpio_pins=args.driver_pins,
+                wait_time=args.wait_time
+            )
+            StateLogManager(log_data=door_info, log_loc=args.state_log)
     except KeyboardInterrupt:
         print("Closing the program")
     finally:
