@@ -45,9 +45,9 @@ def float_2_steps(revs, rev_steps="half"):
     :param rev_steps:   Accepted choices are "half" or "full"
     :return:
     """
-    if rev_steps.lower() == 'half':
+    if rev_steps == 1:
         rev_count = 64
-    elif rev_steps.lower() == 'full':
+    elif rev_steps == 2:
         rev_count = 32
     else:
         raise TypeError("Accepted choices are 'full' or 'half', provided value was: {}".format(rev_steps))
@@ -94,7 +94,8 @@ parser.add_argument('--wait_time',
                     dest='wait_time',
                     type=is_float,
                     default=0.001,
-                    help='Specify the amount of time you want to wait between setting the step of the stepper motor.'
+                    help='Specify the amount of time you want to wait between setting the step of the stepper motor.\n'
+                         'Default is [0.001].'
                     )
 parser.add_argument('--revolutions',
                     dest='revolutions',

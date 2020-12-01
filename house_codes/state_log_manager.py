@@ -70,7 +70,7 @@ def check_door_state(file_path='../data/state_log.txt'):
         state_lex = {'door_state': state, 'time': time}
     except FileNotFoundError:
         while True:
-            user_feedback = input("The state log cannot be found, type 'y' if the door is open or 'n' if closed.")
+            user_feedback = input("The state log cannot be found, type 'y' if the door is open or 'n' if closed:  ")
             user_feedback = user_feedback.lower()
             if user_feedback == 'y' or user_feedback == 'n':
                 break
