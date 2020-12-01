@@ -176,8 +176,6 @@ def turn_motor(action, seq, seq_steps, gpio_pins, wait_time):
     i = 0
     counter = 0
     while i < seq_steps:
-        print("On step: {}".format(i))
-        print("Total steps: {}".format(seq_steps))
         for pin in range(0, 4):
             xpin = gpio_pins[pin]
             if seq[counter][pin] != 0:

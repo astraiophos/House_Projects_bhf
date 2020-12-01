@@ -18,7 +18,7 @@ class StateLogManager:
         self.log_data = log_data
         self.log_path = log_loc
         self.get_time_data()
-        if hasattr(self.log_data, 'door_state'):
+        if 'door_state' in self.log_data:
             self.state_log_text = self.set_door_state()
         if hasattr(self, 'state_log_text'):
             self.write_state()
