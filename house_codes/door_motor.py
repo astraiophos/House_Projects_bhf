@@ -216,6 +216,7 @@ if __name__ == '__main__':
                 print("The door has already been {}ed.".format(args.door_action))
             else:
                 print("The door has already been {}d.".format(args.door_action))
+            exit(0)
         else:
             # Use BCM GPIO references instead of physical pin numbers
             GPIO.setmode(GPIO.BCM)
