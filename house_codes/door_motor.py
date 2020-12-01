@@ -46,9 +46,9 @@ def float_2_steps(revs, rev_steps="half"):
     :return:
     """
     if rev_steps == 1:
-        rev_count = 64
+        rev_count = 4096
     elif rev_steps == 2:
-        rev_count = 32
+        rev_count = 2048
     else:
         raise TypeError("Accepted choices are 'full' or 'half', provided value was: {}".format(rev_steps))
     import decimal
