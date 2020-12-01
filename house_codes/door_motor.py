@@ -187,10 +187,11 @@ def turn_motor(action, seq, seq_steps, gpio_pins, wait_time):
         # If we reach the end of the sequence start again
         if abs(counter) == len(seq) - 1:
             counter = 0
+            i += 1
         elif abs(counter) < len(seq) - 1:
             counter += step_dir
         # Wait before moving on
-        i += 1
+        # i += 1
         time.sleep(wait_time)
     door_state = {'door_state': action, 'time': datetime.datetime.now()}
     return door_state
