@@ -13,7 +13,7 @@ Pseudo Code:    The code in general works in the following manner:
 import argparse
 from pathlib import Path
 import datetime
-from house_codes.state_log_manager import check_door_state, StateLogManager
+from state_log_manager import check_door_state, StateLogManager
 import time
 import RPi.GPIO as GPIO
 
