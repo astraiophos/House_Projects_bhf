@@ -102,8 +102,8 @@ parser.add_argument('--revolutions',
                     type=float,
                     default=3,
                     help='Specify the number of revolutions to turn. This motor operates using half-steps (a total \n'
-                         'of 64 half-steps, or 2.8125 degrees per half-step). To specify partial revolutions, use a \n'
-                         'floating decimal value (e.g. one half of a revolution is 0.5 revolutions, or 32 half-\n'
+                         'of 4096 half-steps, or 0.0879 degrees per half-step). To specify partial revolutions, use a \n'
+                         'floating decimal value (e.g. one half of a revolution is 0.5 revolutions, or 2048 half-\n'
                          'steps). Do not type the number of half-steps, but understand that the code will translate\n'
                          'the number of revolutions from a floating point decimal value into the number of steps\n'
                          'needed to drive the motor. The default is [3.0] revolutions.'
@@ -187,11 +187,10 @@ def turn_motor(action, seq, seq_steps, gpio_pins, wait_time):
         # If we reach the end of the sequence start again
         if abs(counter) == len(seq) - 1:
             counter = 0
-            i += 1
         elif abs(counter) < len(seq) - 1:
             counter += step_dir
-        # Wait before moving on
-        # i += 1
+        # Wait before moving on and increase counter for sequence steps
+        i += 1
         time.sleep(wait_time)
     door_state = {'door_state': action, 'time': datetime.datetime.now()}
     return door_state
