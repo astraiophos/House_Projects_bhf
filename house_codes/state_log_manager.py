@@ -57,14 +57,30 @@ def check_door_state(file_path='../data/state_log.txt'):
     :param file_path:   Path to the state log file
     :return:            Returns a dictionary object containing keys for the door state and time
     """
-    log_text = Path(file_path).read_text()
-    log_text = log_text.replace('\r', '\n').replace('\n\n', '\n').split('\n')
-    state = ''
-    time = ''
-    for line in log_text:
-        if 'door_state' in line:
-            state = line.split()[-1]
-        elif 'time' in line:
-            time = line.split(maxsplit=1)[-1]
-    state_lex = {'door_state': state, 'time': time}
+    try:
+        log_text = Path(file_path).read_text()
+        log_text = log_text.replace('\r', '\n').replace('\n\n', '\n').split('\n')
+        state = ''
+        time = ''
+        for line in log_text:
+            if 'door_state' in line:
+                state = line.split()[-1]
+            elif 'time' in line:
+                time = line.split(maxsplit=1)[-1]
+        state_lex = {'door_state': state, 'time': time}
+    except FileNotFoundError:
+        while True:
+            user_feedback = input("The state log cannot be found, type 'y' if the door is open or 'n' if closed.")
+            user_feedback = user_feedback.lower()
+            if user_feedback == 'y' or user_feedback == 'n':
+                break
+            else:
+                print("Only [y/n] are accepted answers (do not include any quotation marks). Try again.")
+                continue
+        if user_feedback == 'y':
+            door_state = 'open'
+        else:
+            door_state = 'close'
+        time = datetime.datetime.now()
+        state_lex = {'door_state': door_state, 'time': time}
     return state_lex

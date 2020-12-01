@@ -172,15 +172,12 @@ def turn_motor(action, seq, seq_steps, gpio_pins, wait_time):
         step_dir = 1
     elif action == 'close':
         step_dir = -1
-    else:
-        raise TypeError("Expected either 'open' or 'close'. Provided: {}".format(action))
     i = 0
     counter = 0
     while i < seq_steps:
         for pin in range(0, 4):
             xpin = gpio_pins[pin]
             if seq[counter][pin] != 0:
-                print("Enable GPIO %i" % (xpin))
                 GPIO.output(xpin, True)
             else:
                 GPIO.output(xpin, False)
@@ -212,8 +209,11 @@ def setup_pins(gpio_pins):
 if __name__ == '__main__':
     try:
         cur_status = check_door_state(args.state_log)
-        if cur_status == args.door_action:
-            print("The door has already been {}ed.".format(args.door_action))
+        if args.door_action == cur_status['door_state']:
+            if args.door_action == 'open':
+                print("The door has already been {}ed.".format(args.door_action))
+            else:
+                print("The door has already been {}d.".format(args.door_action))
         else:
             # Use BCM GPIO references instead of physical pin numbers
             GPIO.setmode(GPIO.BCM)
