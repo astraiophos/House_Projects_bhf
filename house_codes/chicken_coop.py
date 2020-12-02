@@ -98,7 +98,7 @@ def is_time_greater(time_limit, check_time=None):
     """
     check_time = check_time or datetime.datetime.now().time()
     print("Time limit: {}".format(time_limit.strftime('%H:%M:%S')))
-    print("Current Time: {}".format(time_limit.strftime('%H:%M:%S')))
+    print("Current Time: {}".format(check_time.strftime('%H:%M:%S')))
     if check_time > time_limit:
         return True
     else:
