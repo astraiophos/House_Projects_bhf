@@ -262,24 +262,26 @@ if __name__ == '__main__':
         while True:
             action = None
             if check_times.time_to_check() is True:
+                print("Taking Readings")
                 rec_list = [0 for i in range(args.trend_len)]
                 i = 0
-                while i < args.trend_len:
-                    reading = take_measurement(
-                        charge_pin=args.charging_pin,
-                        measure_pin=args.reading_pin,
-                        sample_num=args.reading_samples,
-                        wtime=args.resistor_time
-                    )
-                    rec_list = rec_list[1:] + [reading]
-                    i += 1
-                    time.sleep(args.reading_intervals * 60)
+                reading = take_measurement(
+                    charge_pin=args.charging_pin,
+                    measure_pin=args.reading_pin,
+                    sample_num=args.reading_samples,
+                    wtime=args.resistor_time
+                )
+                rec_list = rec_list[1:] + [reading]
+                i += 1
+                time.sleep(args.reading_intervals * 60)
                 trend = trend_check(rec_list)
                 if trend == check_times.openclose_check():
                     action = trend
             elif check_times.limit_check() is not None:
+                print("Enforcing limit rules")
                 action = check_times.limit_check()
             if action is not None:
+                print("The door will {} now".format(action))
                 door_info = turn_motor(
                     action=action,
                     seq=step_sequence,
