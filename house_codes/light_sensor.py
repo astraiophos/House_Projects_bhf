@@ -5,8 +5,7 @@ Date:           November 30, 2020
 Usage:          This code is meant to extend functionality on a raspberry pi board to make use of a photoresistor.
 Pseudo Code:    The code in general works in the following manner:
                 1.  Accepts user arguments
-                2.  Based on the arguments provided, it will turn the motor
-                3.  Change the state log of the chicken coop door
+                2.  Based on the arguments provided, it will take a reading and return the reading
 """
 
 import argparse
