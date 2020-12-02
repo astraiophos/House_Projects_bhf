@@ -79,7 +79,7 @@ def take_measurement(
         GPIO.setmode(GPIO.BCM)
         i = 0
         samples = []
-        while i < args.num_samples:
+        while i < sample_num:
             time.sleep(args.wait_time)
             samples.append(rc_time(tpin=args.charging_pin, mpin=args.measuring_pin))
             i += 1
