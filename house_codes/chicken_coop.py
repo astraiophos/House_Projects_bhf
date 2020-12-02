@@ -142,7 +142,7 @@ parser.add_argument('--step_time',
 parser.add_argument('--revolutions',
                     dest='revolutions',
                     type=float,
-                    default=3,
+                    default=12,
                     help='Specify the number of revolutions to turn. This motor operates using half-steps (a total \n'
                          'of 4096 half-steps, or 0.0879 degrees per half-step). To specify partial revolutions, use a \n'
                          'floating decimal value (e.g. one half of a revolution is 0.5 revolutions, or 2048 half-\n'
