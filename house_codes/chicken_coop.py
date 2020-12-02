@@ -21,6 +21,9 @@ from pathlib import Path
 import datetime
 import time
 import RPi.GPIO as GPIO
+from state_log_manager import check_door_state, StateLogManager
+from light_sensor import list_average, rc_time, take_measurement
+from door_motor import set_sequence, turn_motor, setup_pins
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -218,10 +221,6 @@ args = parser.parse_args()
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Primary functions
-
-from state_log_manager import check_door_state, StateLogManager
-from light_sensor import list_average, rc_time, take_measurement
-from door_motor import set_sequence, turn_motor, setup_pins
 
 
 def trend_check(light_list):

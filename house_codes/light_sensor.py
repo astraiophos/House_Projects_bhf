@@ -25,47 +25,6 @@ def list_average(alist):
     """
     return sum(alist)/len(alist)
 
-# ----------------------------------------------------------------------------------------------------------------------
-# User Input (Parser)
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument('--num_samples',
-                    dest='num_samples',
-                    type=int,
-                    default=10,
-                    help='This dictates the number of samples to take an average of before reporting the number.\n'
-                         'Default is [10].'
-                    )
-parser.add_argument('--wait_time',
-                    dest='wait_time',
-                    type=float,
-                    default=2,
-                    help='This is the number of seconds to wait between each individual reading (before averaging).\n'
-                         'Can accept decimal values.'
-                    )
-parser.add_argument('--charging_pin',
-                    dest='charging_pin',
-                    type=int,
-                    default=25,
-                    help='If you change the pinout from the Raspberry Pi board, you can change the pins here. The \n'
-                         'pin numbers must be the GPIO pins (not to be confused with the physical pin numbering).\n'
-                         'This pin represents the pin that passes through the capacitor before looping back to\n'
-                         'the measuring pin. Turning this pin on will first charge the capacitor before signaling\n'
-                         'the measuring pin as "HIGH", the time will be measured for charging the capacitor.\n'
-                         'The default GPIO pin used is [25].'
-                    )
-parser.add_argument('--measuring_pin',
-                    dest='measuring_pin',
-                    type=int,
-                    default=26,
-                    help='If you change the pinout from the Raspberry Pi board, you can change the pins here. The \n'
-                         'pin numbers must be the GPIO pins (not to be confused with the physical pin numbering).\n'
-                         'This pin will listen for the signal coming from the "charging_pin", waiting for the signal\n'
-                         'to change to "high" when the capacitor is fully charged. The default GPIO pin used is [26].'
-                    )
-args = parser.parse_args()
-
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Primary functions
@@ -102,10 +61,10 @@ def rc_time(tpin, mpin):
 
 
 def take_measurement(
-        charge_pin=args.charging_pin,
-        measure_pin=args.measuring_pin,
-        sample_num=args.num_samples,
-        wtime=args.wait_time
+        charge_pin=25,
+        measure_pin=26,
+        sample_num=10,
+        wtime=2
 ):
     """
     This is the driver function for this script for taking a photoresistor reading.
@@ -130,3 +89,46 @@ def take_measurement(
         print("Closing the program")
     finally:
         GPIO.cleanup()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Main Program
+if __name__ == '__main__':
+    # User Input (Parser)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--num_samples',
+                        dest='num_samples',
+                        type=int,
+                        default=10,
+                        help='This dictates the number of samples to take an average of before reporting the number.\n'
+                             'Default is [10].'
+                        )
+    parser.add_argument('--wait_time',
+                        dest='wait_time',
+                        type=float,
+                        default=2,
+                        help='This is the number of seconds to wait between each individual reading (before averaging).\n'
+                             'Can accept decimal values.'
+                        )
+    parser.add_argument('--charging_pin',
+                        dest='charging_pin',
+                        type=int,
+                        default=25,
+                        help='If you change the pinout from the Raspberry Pi board, you can change the pins here. The \n'
+                             'pin numbers must be the GPIO pins (not to be confused with the physical pin numbering).\n'
+                             'This pin represents the pin that passes through the capacitor before looping back to\n'
+                             'the measuring pin. Turning this pin on will first charge the capacitor before signaling\n'
+                             'the measuring pin as "HIGH", the time will be measured for charging the capacitor.\n'
+                             'The default GPIO pin used is [25].'
+                        )
+    parser.add_argument('--measuring_pin',
+                        dest='measuring_pin',
+                        type=int,
+                        default=26,
+                        help='If you change the pinout from the Raspberry Pi board, you can change the pins here. The \n'
+                             'pin numbers must be the GPIO pins (not to be confused with the physical pin numbering).\n'
+                             'This pin will listen for the signal coming from the "charging_pin", waiting for the signal\n'
+                             'to change to "high" when the capacitor is fully charged. The default GPIO pin used is [26].'
+                        )
+    args = parser.parse_args()
