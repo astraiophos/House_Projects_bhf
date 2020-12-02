@@ -288,12 +288,14 @@ class TimeFrame:
 
     def limit_check(self):
         limit_action = None
-        if is_time_greater(time_limit=self.open_limit) is True:
+        if is_time_greater(time_limit=self.open_limit) is True and \
+                is_time_between(begin_time=self.close_frame[0], end_time=self.close_frame[1]) is False:
             if self.openclose_check('open') == 'open':
-                return 'open'
-        if is_time_greater(time_limit=self.close_limit) is True:
+                limit_action = 'open'
+        elif is_time_greater(time_limit=self.close_limit) is True:
             if self.openclose_check('close') == 'close':
-                return 'close'
+                limit_action = 'close'
+        return limit_action
 
 
 # ----------------------------------------------------------------------------------------------------------------------
