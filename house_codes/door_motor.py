@@ -86,7 +86,7 @@ parser.add_argument('--door_action',
                     dest='door_action',
                     choices=['open', 'close'],
                     type=str.lower,
-                    required=True,
+                    default='open',
                     help='Specify the direction you want the motor to turn. If you say [open] the motor will rotate\n'
                          'clockwise. If [close], then the motor will turn counterclockwise.'
                     )
