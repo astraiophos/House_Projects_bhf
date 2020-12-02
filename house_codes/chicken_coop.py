@@ -290,11 +290,10 @@ class TimeFrame:
         limit_action = None
         if is_time_greater(time_limit=self.open_limit) is True:
             if self.openclose_check('open') == 'open':
-                limit_action = 'open'
+                return 'open'
         if is_time_greater(time_limit=self.close_limit) is True:
             if self.openclose_check('close') == 'close':
-                limit_action = 'close'
-        return limit_action
+                return 'close'
 
 
 # ----------------------------------------------------------------------------------------------------------------------
