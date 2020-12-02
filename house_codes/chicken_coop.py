@@ -281,6 +281,8 @@ class TimeFrame:
             action_frame = 'close'
         if action_frame is not None:
             door_state_lex = check_door_state()
+            print("Current door state: '{}'".format(door_state_lex['door_state']))
+            print("Desired action: '{}'".format(action_frame))
             if door_state_lex['door_state'] != action_frame:
                 return action
             else:
