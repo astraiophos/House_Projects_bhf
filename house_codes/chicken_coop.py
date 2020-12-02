@@ -39,6 +39,20 @@ def is_time_between(begin_time, end_time, check_time=None):
     else: # crosses midnight
         return check_time >= begin_time or check_time <= end_time
 
+def is_time_greater(time_limit, check_time=None):
+    """
+    This will check the current time against the time_limit. If the current time is greater, the function will return
+    [True], else it returns False
+    :param time_limit:  The time to check against (the deadline or limit)
+    :param check_time:  The current time or some other time
+    :return:            boolean
+    """
+    check_time = check_time or datetime.datetime.now().time()
+    if check_time > time_limit:
+        return True
+    else:
+        return False
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # User Input (Parser)
@@ -199,6 +213,8 @@ class TimeFrame:
         self.close_frame = [datetime.time(early_close, 00), datetime.time(late_close, 00)]
         self.close_check = [datetime.time(early_close - 2, 30), datetime.time(late_close - 2, 30)]
         self.check_times = [self.open_check, self.close_check]
+        self.open_limit = datetime.time(late_open, 00)
+        self.close_limit = datetime.time(late_close, 00)
 
     def time_to_check(self):
         for frame in self.check_times:
@@ -219,6 +235,14 @@ class TimeFrame:
         else:
             return None
 
+    def limit_check(self):
+        limit_action = None
+        if is_time_greater(time_limit=self.open_limit) is True:
+            limit_action = 'open'
+        elif is_time_greater(time_limit=self.close_limit) is True:
+            limit_action = 'close'
+        return limit_action
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Main Program
@@ -234,9 +258,9 @@ if __name__ == '__main__':
         # Establish when to check the photoresistor
         check_times = TimeFrame(args.early_open, args.late_open, args.early_close, args.late_close)
         while True:
-            rec_list = [0 for i in range(args.trend_len)]
             action = None
             if check_times.time_to_check() is True:
+                rec_list = [0 for i in range(args.trend_len)]
                 i = 0
                 while i < args.trend_len:
                     reading = take_measurement(
@@ -251,7 +275,19 @@ if __name__ == '__main__':
                 trend = trend_check(rec_list)
                 if trend == check_times.openclose_check():
                     action = trend
-            elif ##TODO need to make sure door is open by the absolute latest time
+            elif check_times.limit_check() is not None:
+                action = check_times.limit_check()
+            if action is not None:
+                door_info = turn_motor(
+                    action=action,
+                    seq=step_sequence,
+                    seq_steps=num_steps,
+                    gpio_pins=args.driver_pins,
+                    wait_time=args.step_time
+                )
+                StateLogManager(log_data=door_info, log_loc=args.state_log)
+            else:
+                time.sleep(60)
     except KeyboardInterrupt:
         print("Closing the program")
     finally:
