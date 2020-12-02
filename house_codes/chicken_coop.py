@@ -261,6 +261,7 @@ if __name__ == '__main__':
         check_times = TimeFrame(args.early_open, args.late_open, args.early_close, args.late_close)
         while True:
             action = None
+            print("Checking the available actions based on the time")
             if check_times.time_to_check() is True:
                 print("Taking Readings")
                 rec_list = [0 for i in range(args.trend_len)]
