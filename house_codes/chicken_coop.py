@@ -275,13 +275,13 @@ class TimeFrame:
         return False
 
     def openclose_check(self, action_frame=None):
-        if is_time_between(begin_time=self.open_frame[0], end_time=self.open_frame[1]) is True:
+        if is_time_between(begin_time=self.open_frame[0], end_time=self.open_frame[1]) is True and action_frame is None:
             action_frame = 'open'
-        elif is_time_between(begin_time=self.close_frame[0], end_time=self.close_frame[1]) is True:
+        elif is_time_between(begin_time=self.close_frame[0], end_time=self.close_frame[1]) is True and action_frame is None:
             action_frame = 'close'
         if action_frame is not None:
             door_state_lex = check_door_state()
-            if door_state_lex['door_state'] == action_frame:
+            if door_state_lex['door_state'] != action_frame:
                 return action
             else:
                 return None
