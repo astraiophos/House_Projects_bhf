@@ -290,9 +290,12 @@ class TimeFrame:
         limit_action = None
         if is_time_greater(time_limit=self.open_limit) is True and \
                 is_time_between(begin_time=self.close_frame[0], end_time=self.close_frame[1]) is False:
+            print("Got the limit enforced, check log that it's closed")
             if self.openclose_check('open') == 'open':
+                print("Success in getting the limit enforced!")
                 limit_action = 'open'
         elif is_time_greater(time_limit=self.close_limit) is True:
+            print("Got the limit enforced, check log that it's closed")
             if self.openclose_check('close') == 'close':
                 limit_action = 'close'
         return limit_action
