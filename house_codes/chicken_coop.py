@@ -33,7 +33,7 @@ import RPi.GPIO as GPIO
 def is_time_between(begin_time, end_time, check_time=None):
     # Credit to @Joe Holloway and @rouble for this answer on stackoverflow.com
     # If check time is not given, default to current UTC time
-    check_time = check_time or datetime.utcnow().time()
+    check_time = check_time or datetime.datetime.now().time()
     if begin_time < end_time:
         return check_time >= begin_time and check_time <= end_time
     else: # crosses midnight
@@ -57,11 +57,30 @@ parser.add_argument('--reading_intervals',
                     default=15,
                     help='The number of minutes to wait between taking readings. Default is [15].'
                     )
+parser.add_argument('--reading_samples',
+                    dest='reading_samples',
+                    type=int,
+                    default=10,
+                    help='This dictates the number of samples to take an average of before reporting the number.\n'
+                         'Default is [10].'
+                    )
 parser.add_argument('--resistor_time',
                     dest='resistor_time',
                     type=int,
                     default=2,
                     help='The number of seconds to wait between checking the photoresistor timing. Default is [2].'
+                    )
+parser.add_argument('--charging_pin',
+                    dest='charging_pin',
+                    type=int,
+                    default=25,
+                    help='The GPIO pin for charging the capacitor, then signaling the reading pin. Default is [25].'
+                    )
+parser.add_argument('--reading_pin',
+                    dest='reading_pin',
+                    type=int,
+                    default=26,
+                    help='The GPIO pin for reading when the capacitor is charged. Default is [26].'
                     )
 parser.add_argument('--state_log',
                     dest='state_log',
@@ -179,14 +198,60 @@ class TimeFrame:
         self.open_check = [datetime.time(early_open - 2, 30), datetime.time(late_open - 2, 30)]
         self.close_frame = [datetime.time(early_close, 00), datetime.time(late_close, 00)]
         self.close_check = [datetime.time(early_close - 2, 30), datetime.time(late_close - 2, 30)]
-    
+        self.check_times = [self.open_check, self.close_check]
+
+    def time_to_check(self):
+        for frame in self.check_times:
+            if is_time_between(begin_time=frame[0], end_time=frame[1]) is True:
+                return True
+        return False
+
+    def openclose_check(self):
+        action_frame = None
+        if is_time_between(begin_time=self.open_frame[0], end_time=self.open_frame[1]) is True:
+            action_frame = 'open'
+        elif is_time_between(begin_time=self.close_frame[0], end_time=self.close_frame[1]) is True:
+            action_frame = 'close'
+        if action_frame is not None:
+            door_state_lex = check_door_state()
+        if door_state_lex['door_state'] == action_frame:
+            return action
+        else:
+            return None
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Main Program
 if __name__ == '__main__':
     try:
-
+        # Use BCM GPIO references instead of physical pin numbers
+        GPIO.setmode(GPIO.BCM)
+        # Set up the pins for driving the motor for the door
+        setup_pins(args.driver_pins)
+        # Set up the information for turning the motor the correct number of times
+        num_steps = float_2_steps(args.revolutions, args.step_size)
+        step_sequence = set_sequence(args.step_size)
+        # Establish when to check the photoresistor
+        check_times = TimeFrame(args.early_open, args.late_open, args.early_close, args.late_close)
+        while True:
+            rec_list = [0 for i in range(args.trend_len)]
+            action = None
+            if check_times.time_to_check() is True:
+                i = 0
+                while i < args.trend_len:
+                    reading = take_measurement(
+                        charge_pin=args.charging_pin,
+                        measure_pin=args.reading_pin,
+                        sample_num=args.reading_samples,
+                        wtime=args.resistor_time
+                    )
+                    rec_list = rec_list[1:] + [reading]
+                    i += 1
+                    time.sleep(args.reading_intervals * 60)
+                trend = trend_check(rec_list)
+                if trend == check_times.openclose_check():
+                    action = trend
+            elif ##TODO need to make sure door is open by the absolute latest time
     except KeyboardInterrupt:
         print("Closing the program")
     finally:
