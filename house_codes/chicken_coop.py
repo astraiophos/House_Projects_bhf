@@ -115,7 +115,7 @@ parser.add_argument('--late_open',
                     dest='late_open',
                     type=int,
                     choices=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-                    default=5,
+                    default=7,
                     help='The latest hour of the day (using 24-hour format as integer) door can possibly open.'
                     )
 parser.add_argument('--early_close',
@@ -129,7 +129,7 @@ parser.add_argument('--late_close',
                     dest='late_close',
                     type=int,
                     choices=[13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
-                    default=8,
+                    default=20,
                     help='The latest hour of the day (using 24-hour format as integer) door can possibly close.'
                     )
 parser.add_argument('--step_time',
@@ -223,25 +223,26 @@ class TimeFrame:
                 return True
         return False
 
-    def openclose_check(self):
-        action_frame = None
+    def openclose_check(self, action_frame=None):
         if is_time_between(begin_time=self.open_frame[0], end_time=self.open_frame[1]) is True:
             action_frame = 'open'
         elif is_time_between(begin_time=self.close_frame[0], end_time=self.close_frame[1]) is True:
             action_frame = 'close'
         if action_frame is not None:
             door_state_lex = check_door_state()
-        if door_state_lex['door_state'] == action_frame:
-            return action
-        else:
-            return None
+            if door_state_lex['door_state'] == action_frame:
+                return action
+            else:
+                return None
 
     def limit_check(self):
         limit_action = None
         if is_time_greater(time_limit=self.open_limit) is True:
-            limit_action = 'open'
-        elif is_time_greater(time_limit=self.close_limit) is True:
-            limit_action = 'close'
+            if self.openclose_check('open') == 'open':
+                limit_action = 'open'
+        if is_time_greater(time_limit=self.close_limit) is True:
+            if self.openclose_check('close') == 'close':
+                limit_action = 'close'
         return limit_action
 
 
