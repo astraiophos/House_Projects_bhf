@@ -100,6 +100,7 @@ def is_time_greater(time_limit, check_time=None):
     print("Time limit: {}".format(time_limit.strftime('%H:%M:%S')))
     print("Current Time: {}".format(check_time.strftime('%H:%M:%S')))
     if check_time > time_limit:
+        print("Time exceeds limit")
         return True
     else:
         return False
