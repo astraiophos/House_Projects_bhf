@@ -284,7 +284,7 @@ class TimeFrame:
             print("Current door state: '{}'".format(door_state_lex['door_state']))
             print("Desired action: '{}'".format(action_frame))
             if door_state_lex['door_state'] != action_frame:
-                return action
+                return action_frame
             else:
                 return None
 
