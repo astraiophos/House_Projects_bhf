@@ -39,6 +39,7 @@ def is_time_between(begin_time, end_time, check_time=None):
     else: # crosses midnight
         return check_time >= begin_time or check_time <= end_time
 
+
 def is_time_greater(time_limit, check_time=None):
     """
     This will check the current time against the time_limit. If the current time is greater, the function will return
