@@ -19,15 +19,60 @@ Pseudo Code:    The code in general works in the following manner:
 import argparse
 from pathlib import Path
 import datetime
-from state_log_manager import check_door_state, StateLogManager
-from light_sensor import list_average, rc_time, take_measurement
-from door_motor import file_path, is_float, float_2_steps, str_2_bool, set_sequence, turn_motor, setup_pins
 import time
 import RPi.GPIO as GPIO
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Utility functions
+
+
+def file_path(mystr):
+    if Path(mystr).is_file():
+        return mystr
+    else:
+        raise FileNotFoundError("File path provided does not exist: {}".format(mystr))
+
+
+def is_float(mystr):
+    try:
+        float(mystr)
+        return True
+    except ValueError:
+        return False
+
+
+def float_2_steps(revs, rev_steps="half"):
+    """
+    This will convert the number of revolutions desired into the proper number of motor steps, depending too on whether
+    the half-step or full-step turns are used for turing the motor.
+    :param revs:        The number of revolutions (floating point value assumed)
+    :param rev_steps:   Accepted choices are "half" or "full"
+    :return:
+    """
+    if rev_steps == 1:
+        rev_count = 4096
+    elif rev_steps == 2:
+        rev_count = 2048
+    else:
+        raise TypeError("Accepted choices are 'full' or 'half', provided value was: {}".format(rev_steps))
+    import decimal
+    decimal.getcontext().rounding = decimal.ROUND_DOWN
+    revs = decimal.Decimal(revs)
+    steps = int(round(decimal.Decimal(revs * rev_count), 0))
+    return steps
+
+
+def str_2_bool(mystr):
+    trues = ['t', 'true', '1']
+    falses = ['f', 'false', '0']
+    mystr = mystr.lower()
+    if mystr in trues:
+        return True
+    elif mystr in falses:
+        return False
+    else:
+        raise TypeError("Cannot convert {} to boolean. Provide acceptable boolean value".format(mystr))
 
 
 def is_time_between(begin_time, end_time, check_time=None):
@@ -173,6 +218,10 @@ args = parser.parse_args()
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Primary functions
+
+from state_log_manager import check_door_state, StateLogManager
+from light_sensor import list_average, rc_time, take_measurement
+from door_motor import set_sequence, turn_motor, setup_pins
 
 
 def trend_check(light_list):
