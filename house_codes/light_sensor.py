@@ -80,8 +80,8 @@ def take_measurement(
         i = 0
         samples = []
         while i < sample_num:
-            time.sleep(args.wait_time)
-            samples.append(rc_time(tpin=args.charging_pin, mpin=args.measuring_pin))
+            time.sleep(wtime)
+            samples.append(rc_time(tpin=charge_pin, mpin=measure_pin))
             i += 1
         reading = list_average(alist=samples)
         return reading
@@ -132,3 +132,9 @@ if __name__ == '__main__':
                              'to change to "high" when the capacitor is fully charged. The default GPIO pin used is [26].'
                         )
     args = parser.parse_args()
+    print(take_measurement(
+        charge_pin=args.charging_pin,
+        measure_pin=args.measuring_pin,
+        sample_num=args.num_samples,
+        wtime=args.wait_time
+    ))
