@@ -1,0 +1,2 @@
+door_state: open
+time: 12/02/2020, 16:43:36
